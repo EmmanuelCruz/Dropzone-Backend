@@ -65,7 +65,7 @@ exports.obtenerEnlace = async (req, res, next) => {
 
   // Si existe
 
-  res.json({archivo: enlaces.nombre})
+  res.json({archivo: enlaces.nombre, password: false})
 
   next()
 }
@@ -81,8 +81,27 @@ exports.tienePassword = async (req, res, next) => {
   }
 
   if(enlaces.password){
-    return res.json({password: true})
+    res.json({password: true, enlace: enlaces.url})
   }
 
   next()
+}
+
+exports.verificarPassword = async (req, res, next) => {
+
+  console.log(req.params)
+  const { url } = req.params
+  
+  const enlace = await Enlaces.findOne({url})
+
+  // Verificar el password
+  
+  const { password } = req.body
+  if(bcrypt.compareSync(password, enlace.password)){
+    next()
+  } else {
+    return res.status(401).json({msg: 'Password incorrecto'})
+  }
+
+  
 }
