@@ -9,7 +9,7 @@ exports.autenticarUsuario = async (req, res, next) => {
   // Mensajes de error
   const errores = validationResult(req)
   if(!errores.isEmpty()){
-    res.status(404).json({errores: errores.array()})
+    res.status(404).json({errores: errores.errors[0]})
   }
 
   // Buscar usuario

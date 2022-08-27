@@ -12,11 +12,11 @@ exports.nuevoEnlace = async (req, res, next) => {
     return res.status(404).json({errores: errores.array()})
   }
 
-  const { password, nombre_archivo } = req.body
+  const { password, nombre_archivo, nombre } = req.body
 
   const enlace = new Enlaces()
   enlace.url = shortid.generate()
-  enlace.nombre = shortid.generate()
+  enlace.nombre = nombre
   enlace.nombre_archivo = nombre_archivo
 
   // Si el usuario está identificado
@@ -43,6 +43,15 @@ exports.nuevoEnlace = async (req, res, next) => {
 
 }
 
+exports.todosEnlaces = async (req, res, next) => {
+  try {
+    const enlaces = await Enlaces.find({}).select('url')
+    res.json({enlaces})
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // Obtener el enlace
 exports.obtenerEnlace = async (req, res, next) => {
 
@@ -58,20 +67,22 @@ exports.obtenerEnlace = async (req, res, next) => {
 
   res.json({archivo: enlaces.nombre})
 
-  // si las descargas son igual a 1, se borra la entrada y se borra el archivo
-  const { descargas, nombre } = enlaces
+  next()
+}
 
-  if(descargas === 1){
-    req.archivo = nombre
+// Verificar si hay password
+exports.tienePassword = async (req, res, next) => {
+  // Verificar si existe
+  const enlaces = await Enlaces.findOne({url: req.params.url})
 
-    // Eliminar el archivo de la base
-    await Enlaces.findOneAndRemove(req.params.url)
-
-    next()
-  } else{
-    enlaces.descargas--
-    await enlaces.save()
+  if(!enlaces){
+    res.status(404).json({msg:'Este enlace no existe'})
+    return next()
   }
 
-  // Si es distinto de 1. Se disminiye la cantidad de descargas
+  if(enlaces.password){
+    return res.json({password: true})
+  }
+
+  next()
 }

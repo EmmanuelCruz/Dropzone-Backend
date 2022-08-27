@@ -10,6 +10,8 @@ router.post('/', [
   check('nombre_archivo', 'Falta un nombre de archivo').not().isEmpty()
 ], auth, enlacesController.nuevoEnlace)
 
-router.get('/:url', enlacesController.obtenerEnlace, archivosController.eliminarArchivo)
+router.get('/', enlacesController.todosEnlaces)
+
+router.get('/:url', enlacesController.tienePassword, enlacesController.obtenerEnlace)
 
 module.exports = router
